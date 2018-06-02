@@ -29,7 +29,10 @@ class CreateTaskViewController: UIViewController {
     }
     
 
-    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        desctiprionTextView.delegate = self
+    }
     @IBAction func close(_ sender: Any) {
         self.dismiss(animated: true, completion: nil)
     }
@@ -42,10 +45,20 @@ class CreateTaskViewController: UIViewController {
             //Save to core data
             dataService.addTask(task: model)
             //Save to Firebase
-//            remoteDataService.uploadTask(model, completion: {
-//                self.dismiss(animated: true, completion: nil)
-//            })
+            remoteDataService.uploadTask(model, completion: {
+                self.dismiss(animated: true, completion: nil)
+            })
         }
         
+    }
+}
+
+extension CreateTaskViewController: UITextViewDelegate {
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        if text == "\n" {
+            textView.resignFirstResponder()
+            return false
+        }
+        return true
     }
 }
