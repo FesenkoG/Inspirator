@@ -27,8 +27,9 @@ class DataService {
             guard let email = dataSnapshot.childSnapshot(forPath: "email").value as? String else { return }
             guard let points = dataSnapshot.childSnapshot(forPath: "points").value as? Int else { return }
             let data = UserData(email: email, points: points)
-            completionHandler(data)
-            
+            DispatchQueue.main.async {
+                completionHandler(data)
+            }
         }
     }
     
@@ -42,6 +43,7 @@ class DataService {
             completion?()
         }
     }
+    
     func getAllUsers(completionHandler: @escaping ([ParticipantModel]) -> Void) {
         var users = [ParticipantModel]()
         refUsers.observeSingleEvent(of: .value) { (dataSnapshot) in
@@ -52,9 +54,12 @@ class DataService {
                 
                 users.append(ParticipantModel(name: email, points: points))
             }
-            completionHandler(users)
+            DispatchQueue.main.async {
+                completionHandler(users)
+            }
         }
     }
+    
     //TASKS
     func uploadTask(_ task: TaskModel, completion: (() -> ())?) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
@@ -63,9 +68,23 @@ class DataService {
         refTasks.childByAutoId().updateChildValues(dataToSend)
         completion?()
     }
+    
         //TODO : CREATE THIS METHOD
-    func removeTask(_ task: TaskModel, completion: ((Bool) -> Void)?) {
-        
+    func removeTask(_ taskFromApp: TaskModel, completion: (() -> Void)?) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        refTasks.observeSingleEvent(of: .value) { (dataSnapshotOriginal) in
+            guard let dataSnapshot = dataSnapshotOriginal.children.allObjects as? [DataSnapshot] else { return }
+            for task in dataSnapshot {
+                guard let name = task.childSnapshot(forPath: "name").value as? String else { return }
+                guard let userId = task.childSnapshot(forPath: "userId").value as? String else { return }
+                if name == taskFromApp.name, uid == userId {
+                    self.refTasks.child(task.key).removeValue()
+                }
+            }
+            DispatchQueue.main.async {
+                completion?()
+            }
+        }
     }
     
     func getTasks(handler: @escaping ([TaskModel]) -> Void) {
@@ -85,7 +104,9 @@ class DataService {
                     tasks.append(taskModel)
                 }
             }
-            handler(tasks)
+            DispatchQueue.main.async {
+                handler(tasks)
+            }
         }
     }
     

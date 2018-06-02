@@ -18,6 +18,7 @@ class ProfileViewController: UIViewController {
     
     @IBOutlet weak var spinner: UIActivityIndicatorView!
     var authService: IAuthService = AuthService()
+    var dataService = CoreDataStack()
     var remoteDataService = DataService()
     var participants = [ParticipantModel]()
     
@@ -38,7 +39,7 @@ class ProfileViewController: UIViewController {
             self.participants = users
             self.participants.sort(by: {$0.points > $1.points})
             self.remoteDataService.getUserData(completionHandler: { (userData) in
-                self.pointsLbl.text = String(describing: userData.points)
+                self.pointsLbl.text = "Points: " + String(describing: userData.points)
                 DispatchQueue.main.async {
                     self.tableView.reloadData()
                     self.spinner.stopAnimating()
@@ -60,7 +61,12 @@ class ProfileViewController: UIViewController {
     }
     
     @IBAction func uploadData(_ sender: Any) {
-        
+        dataService.deleteAllTasks()
+        remoteDataService.getTasks { (tasks) in
+            for task in tasks {
+                self.dataService.addTask(task: task)
+            }
+        }
     }
     
 }

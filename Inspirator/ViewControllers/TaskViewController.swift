@@ -53,13 +53,15 @@ class TaskViewController: UIViewController {
     }
     
     @IBAction func finishTask(_ sender: Any) {
-        guard let name = model?.name else { return }
-        guard let points = model?.cost else { return }
+        guard let model = model else { return }
+        let name = model.name
+        let points = model.cost
         remoteDataService?.updateUserData(withPoints: Int(points)) { }
         dataService?.deleteTask(withName: name)
-        self.navigationController?.popViewController(animated: true)
-        
+        remoteDataService?.removeTask(model, completion: {
+            DispatchQueue.main.async {
+                self.navigationController?.popViewController(animated: true)
+            }
+        })
     }
-    
-
 }
