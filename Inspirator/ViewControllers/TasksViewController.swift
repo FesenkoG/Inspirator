@@ -45,10 +45,10 @@ class TasksViewController: UIViewController {
                 remoteDataService.updateUserData(withPoints: -Int(task.cost), completion: nil)
                 completion(task)
                 dataService.deleteTask(withName: task.name)
+                tasks = dataService.getTasks()
                 remoteDataService.removeTask(task) {
                     self.tableView.reloadData()
                 }
-                
             }
         }
     }
